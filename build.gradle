@@ -45,7 +45,6 @@ dependencyManagement {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-webflux')
-//    compile('io.projectreactor:reactor-core')
     compile("com.fasterxml.jackson.core:jackson-databind")
 	compile("com.fasterxml.jackson.module:jackson-module-kotlin")
     compile("org.jetbrains.kotlin:kotlin-stdlib-jre8:${kotlinVersion}")
