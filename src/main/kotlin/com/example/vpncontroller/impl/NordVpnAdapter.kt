@@ -1,16 +1,22 @@
 package com.example.vpncontroller.impl
 
+import com.example.vpncontroller.boundary.api.VpnStatsAdapter
 import com.example.vpncontroller.boundary.ports.RestAdapter
 import com.example.vpncontroller.domain.Country
 import com.example.vpncontroller.domain.ServerId
 import com.example.vpncontroller.domain.VpnServerStats
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.stream.Collectors
 
-class NordVpnAdapter(private val restAdapter: RestAdapter) {
+@Service
+@Qualifier("nordvpn.com")
+class NordVpnAdapter(private val restAdapter: RestAdapter): VpnStatsAdapter {
     private val endpoint = "https://nordvpn.com/wp-admin/admin-ajax.php?group={group}&country={country}&action={action}"
 
-    fun serverStats(country: Country): Mono<Set<VpnServerStats>> {
+    override fun serverStats(country: Country): Flux<VpnServerStats> {
         val params = mapOf(
                 "group" to "Standard+VPN+servers",
                 "country" to country.name,
@@ -19,7 +25,6 @@ class NordVpnAdapter(private val restAdapter: RestAdapter) {
         return restAdapter
                 .getMany<NordServer>(endpoint, params)
                 .map(this::convertResponse)
-                .collect(Collectors.toSet())
     }
 
     private fun convertResponse(nord: NordServer): VpnServerStats {
