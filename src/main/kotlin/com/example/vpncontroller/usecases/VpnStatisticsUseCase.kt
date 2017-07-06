@@ -1,31 +1,31 @@
 package com.example.vpncontroller.usecases
 
-import com.example.vpncontroller.modules.stats.VpnStatsAdapter
+import com.example.vpncontroller.domain.VpnServerStats
 import com.example.vpncontroller.modules.countries.Countries
-import org.springframework.web.bind.annotation.*
+import com.example.vpncontroller.modules.stats.VpnStatsAdapter
+import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@RestController
-@RequestMapping("/vpn/stats")
+@Service
 class VpnStatisticsUseCase(private val vpnStatsRest: VpnStatsAdapter,
                            private val countries: Countries) {
 
-    @GetMapping("/country/{country}")
-    fun serverStats(@PathVariable country: String) =
-            Mono.justOrEmpty(countries.byCode(country))
+    fun serverStats(countryCode: String): Flux<VpnServerStats> =
+            findCountry(countryCode)
+                    .switchIfEmpty(Mono.error(CountryNotFoundException(countryCode)))
                     .flatMapMany(vpnStatsRest::serverStats)
 
-    @GetMapping("/country/{country}/sorted")
-    fun sortedStats(@PathVariable country: String) =
-            serverStats(country)
+
+    fun sortedStats(countryCode: String): Flux<VpnServerStats> =
+            serverStats(countryCode)
                     .sort(compareBy { it.networkLoad })
 
-    @GetMapping("/country/{country}/best")
-    fun findBest(@PathVariable country: String) =
-            serverStats(country)
+    fun findBest(countryCode: String): Mono<VpnServerStats> =
+            serverStats(countryCode)
                     .collectSortedList(compareBy { it.networkLoad })
                     .map { it.firstOrNull() }
 
-
+    private fun findCountry(code: String) = Mono.justOrEmpty(countries.byCode(code.toUpperCase()))
 
 }
