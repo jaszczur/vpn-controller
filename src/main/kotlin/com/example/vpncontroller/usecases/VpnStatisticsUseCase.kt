@@ -11,18 +11,18 @@ class VpnStatisticsUseCase(private val vpnStatsRest: VpnStatsAdapter,
                            private val countries: Countries) {
 
     @GetMapping("/country/{country}")
-    fun serverStats(@PathVariable countryName: String) =
-            Mono.justOrEmpty(countries.byCode(countryName))
+    fun serverStats(@PathVariable country: String) =
+            Mono.justOrEmpty(countries.byCode(country))
                     .flatMapMany(vpnStatsRest::serverStats)
 
     @GetMapping("/country/{country}/sorted")
-    fun sortedStats(@PathVariable countryName: String) =
-            serverStats(countryName)
+    fun sortedStats(@PathVariable country: String) =
+            serverStats(country)
                     .sort(compareBy { it.networkLoad })
 
     @GetMapping("/country/{country}/best")
-    fun findBest(@PathVariable countryName: String) =
-            serverStats(countryName)
+    fun findBest(@PathVariable country: String) =
+            serverStats(country)
                     .collectSortedList(compareBy { it.networkLoad })
                     .map { it.firstOrNull() }
 
