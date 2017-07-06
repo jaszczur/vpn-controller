@@ -1,5 +1,7 @@
 package com.example.vpncontroller
 
+import com.example.vpncontroller.modules.countries.Countries
+import com.example.vpncontroller.modules.countries.impl.LocalJsonCountriesProvider
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -12,8 +14,10 @@ import java.util.*
 class VpnControllerApplication {
 
     @Bean
-    fun commandLineRunner(ctx: ApplicationContext) = ApplicationRunner { args ->
+    fun countries(countriesProvider: LocalJsonCountriesProvider) = countriesProvider.create()
 
+    @Bean
+    fun commandLineRunner(ctx: ApplicationContext) = ApplicationRunner { args ->
         println("Let's inspect the beans provided by Spring Boot:")
 
         val beanNames = ctx.beanDefinitionNames
@@ -21,7 +25,6 @@ class VpnControllerApplication {
         for (beanName in beanNames) {
             println(beanName)
         }
-
     }
 
 }
