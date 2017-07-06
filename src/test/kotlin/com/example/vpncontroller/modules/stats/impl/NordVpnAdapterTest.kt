@@ -1,19 +1,23 @@
-package com.example.vpncontroller.impl
+package com.example.vpncontroller.modules.stats.impl
 
 import com.example.vpncontroller.domain.Country
 import com.example.vpncontroller.modules.rest.impl.SpringRestAdapter
-import com.example.vpncontroller.modules.stats.impl.NordVpnAdapter
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.Test
 import java.util.stream.Collectors
 
-
 internal class NordVpnAdapterTest {
     @Test
+    @Ignore("Integration test with real server")
     internal fun integration() {
         val cut = NordVpnAdapter(SpringRestAdapter())
         val result = cut.serverStats(Country("AL", "Albania"))
                 .collect(Collectors.toSet())
                 .block()
-        println(result)
+        assertThat(result).isNotEmpty
+        assertThat(result)
+                .allMatch { it.serverId.country.code == "AL"}
+                .allMatch { it.serverId.country.name == "Albania"}
     }
 }
