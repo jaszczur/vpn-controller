@@ -1,7 +1,7 @@
-package com.example.vpncontroller.impl
+package com.example.vpncontroller.modules.stats.impl
 
-import com.example.vpncontroller.boundary.api.VpnStatsAdapter
-import com.example.vpncontroller.boundary.ports.RestAdapter
+import com.example.vpncontroller.modules.stats.VpnStatsAdapter
+import com.example.vpncontroller.modules.rest.RestAdapter
 import com.example.vpncontroller.domain.Country
 import com.example.vpncontroller.domain.ServerId
 import com.example.vpncontroller.domain.VpnServerStats
@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux
 
 @Service
 @Qualifier("nordvpn.com")
-class NordVpnAdapter(private val restAdapter: RestAdapter): VpnStatsAdapter {
+class NordVpnAdapter(private val restAdapter: RestAdapter) : VpnStatsAdapter {
     private val endpoint = "https://nordvpn.com/wp-admin/admin-ajax.php?group={group}&country={country}&action={action}"
 
     override fun serverStats(country: Country): Flux<VpnServerStats> {
@@ -31,6 +31,10 @@ class NordVpnAdapter(private val restAdapter: RestAdapter): VpnStatsAdapter {
         val id = ServerId(country, number)
         return VpnServerStats(id, nord.load)
     }
+
+    private data class NordServer(val short: String,
+                                  val flag: String,
+                                  val country: String,
+                                  val load: Int)
 }
 
-data class NordServer(val short: String, val flag: String, val country: String, val load: Int)

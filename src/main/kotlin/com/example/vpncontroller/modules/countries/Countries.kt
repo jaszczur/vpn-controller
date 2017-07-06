@@ -1,4 +1,4 @@
-package com.example.vpncontroller.boundary.ports
+package com.example.vpncontroller.modules.countries
 
 import com.example.vpncontroller.domain.Country
 import java.util.*

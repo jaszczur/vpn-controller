@@ -1,6 +1,6 @@
-package com.example.vpncontroller.main
+package com.example.vpncontroller.modules.rest.impl
 
-import com.example.vpncontroller.boundary.ports.RestAdapter
+import com.example.vpncontroller.modules.rest.RestAdapter
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient

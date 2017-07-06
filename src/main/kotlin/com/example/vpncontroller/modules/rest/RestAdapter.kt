@@ -1,7 +1,6 @@
-package com.example.vpncontroller.boundary.ports
+package com.example.vpncontroller.modules.rest
 
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 
 abstract class RestAdapter {
 

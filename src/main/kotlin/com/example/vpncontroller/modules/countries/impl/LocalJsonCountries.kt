@@ -1,6 +1,6 @@
-package com.example.vpncontroller.main
+package com.example.vpncontroller.modules.countries.impl
 
-import com.example.vpncontroller.boundary.ports.Countries
+import com.example.vpncontroller.modules.countries.Countries
 import com.example.vpncontroller.domain.Country
 import org.springframework.stereotype.Service
 import java.util.*

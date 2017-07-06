@@ -1,4 +1,4 @@
-package com.example.vpncontroller.boundary.api
+package com.example.vpncontroller.modules.stats
 
 import com.example.vpncontroller.domain.Country
 import com.example.vpncontroller.domain.VpnServerStats
