@@ -22,4 +22,17 @@ class CountriesTest {
         assertThat(cut.byName("San Escobar"))
                 .isEmpty
     }
+
+    @Test
+    fun byCode_shouldReturnCountry_ifItIsPresent() {
+        assertThat(cut.byCode("US"))
+                .isEqualTo(Optional.of(Country("US", "United States")))
+
+    }
+
+    @Test
+    fun byCode_shouldNotReturnCountry_ifItIsAbsent() {
+        assertThat(cut.byCode("SEB"))
+                .isEmpty
+    }
 }
