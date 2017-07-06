@@ -12,7 +12,8 @@ class LocalJsonCountriesProvider(
         @Value("countries.resource") val countriesJsonFile: URL) {
 
     fun load(): List<Country> {
-        return emptyList()
+        val countries = objectMapper.readValue(countriesJsonFile, Array<Country>::class.java)
+        return countries.toList()
     }
 
 
