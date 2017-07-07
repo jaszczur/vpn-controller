@@ -1,21 +1,44 @@
 package com.github.jaszczur.vpncontroller.usecases
 
 import com.github.jaszczur.vpncontroller.domain.ConnectionPerformanceMetric
+import com.github.jaszczur.vpncontroller.domain.ServerId
+import com.github.jaszczur.vpncontroller.modules.stats.VpnStatsAdapter
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.Monitoring
+import com.github.jaszczur.vpncontroller.modules.vpnconnection.VpnConnection
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.annotation.PostConstruct
 
 @Service
-class SwitchConnectionUseCase(private val monitoring: Monitoring) {
+class SwitchConnectionUseCase(private val monitoring: Monitoring,
+                              private val stats: VpnStatsAdapter,
+                              private val conn: VpnConnection) {
+
     @PostConstruct
     fun beginMonitoring(): Unit {
         println("Starting to monitor the connection")
-        val advisor = ConnectionAdvisor(5, 0.8)
+        val advisor = ConnectionAdvisor(3, 0.7)
         monitoring.monitor()
                 .map(advisor::giveAnAdvice)
-                .subscribe { println("Got advice: $it") }
+                .doOnNext { println("Got advice: $it") }
+                .filter { it == Advice.SWITCH }
+                .flatMap { conn.active() }
+                .flatMap(this::findSimilarButBetter)
+                .doOnNext { println("It is recommended to switch to $it") }
+                .subscribe()
     }
+
+    private fun findSimilarButBetter(serverId: ServerId) =
+            stats.serverStats(serverId.country)
+                    .collectSortedList(compareBy { it.networkLoad })
+                    .map { sortedServers ->
+                        val result = sortedServers.firstOrNull()
+                        if (result == null)
+                            serverId
+                        else
+                            result.serverId
+                    }
+
 }
 
 enum class Advice {
