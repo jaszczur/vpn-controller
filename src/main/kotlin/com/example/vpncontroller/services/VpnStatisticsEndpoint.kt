@@ -1,6 +1,7 @@
 package com.example.vpncontroller.services
 
 import com.example.vpncontroller.domain.VpnServerStats
+import com.example.vpncontroller.usecases.VpnConnectionUseCase
 import com.example.vpncontroller.usecases.VpnStatisticsUseCase
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -9,8 +10,9 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.server.ServerResponse
 
 @RestController
-@RequestMapping("/vpn/stats")
-class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase) {
+@RequestMapping("/vpn")
+class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
+                            private val vpnConnectionUseCase: VpnConnectionUseCase) {
 
     @GetMapping("/country/{country}")
     fun serverStats(@PathVariable country: String) =
@@ -24,4 +26,7 @@ class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase) {
     fun findBest(@PathVariable country: String) =
             vpnStatsUseCase.findBest(country)
 
+    @GetMapping("/active")
+    fun activeConnectionStats() =
+            vpnConnectionUseCase.activeConnection()
 }
