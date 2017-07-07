@@ -27,7 +27,12 @@ class SystemdOpenvpnConversions(val countries: Countries) {
     }
 
     fun extractUnitInstance(unitListLine: String): Mono<String> {
-        val matcher = Pattern.compile("openvpn-client@(.*)\\.service").matcher(unitListLine)
-        return Mono.justOrEmpty(matcher.group(1))
+        val matcher = Pattern.compile("^openvpn-client@(.+)\\.service.*").matcher(unitListLine)
+
+        if (matcher.matches()) {
+            return Mono.justOrEmpty(matcher.group(1))
+        } else {
+            return Mono.empty()
+        }
     }
 }
