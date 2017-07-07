@@ -32,11 +32,6 @@ class SystemdOpenvpnConnection(countries: Countries) : VpnConnection {
     override fun disable(): Mono<ServerId> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
-    override fun monitor(): Flux<ConnectionPerformanceMetric> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
 }
 
 open class SystemdCommand(vararg params: String) : Command(systemctlCmd, *params) {
