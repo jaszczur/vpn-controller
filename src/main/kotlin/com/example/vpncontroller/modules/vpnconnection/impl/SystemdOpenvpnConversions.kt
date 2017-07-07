@@ -18,12 +18,16 @@ class SystemdOpenvpnConversions(val countries: Countries) {
 
     fun unitInstanceToServerId(unitInstance: String): Mono<ServerId> {
         val matcher = Pattern.compile("nord-(\\w+)-(\\d+)-(\\w+)").matcher(unitInstance)
-        val countryOrNot = countries.byCode(matcher.group(1))
-        val number = Integer.parseInt(matcher.group(2))
+        if(matcher.matches()) {
+            val countryOrNot = countries.byCode(matcher.group(1).toUpperCase())
+            val number = Integer.parseInt(matcher.group(2))
 
-        return Mono.justOrEmpty(countryOrNot.map { country ->
-            ServerId(country, number)
-        })
+            return Mono.justOrEmpty(countryOrNot.map { country ->
+                ServerId(country, number)
+            })
+        } else {
+            return Mono.error(IllegalStateException("Error while parsing unit instance: " + unitInstance))
+        }
     }
 
     fun extractUnitInstance(unitListLine: String): Mono<String> {
@@ -32,7 +36,7 @@ class SystemdOpenvpnConversions(val countries: Countries) {
         if (matcher.matches()) {
             return Mono.justOrEmpty(matcher.group(1))
         } else {
-            return Mono.empty()
+            return Mono.error(IllegalStateException("Error while parsing unit line: " + unitListLine))
         }
     }
 }
