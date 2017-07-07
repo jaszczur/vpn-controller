@@ -5,7 +5,6 @@ import com.example.vpncontroller.domain.ServerId
 import com.example.vpncontroller.modules.countries.Countries
 import org.assertj.core.api.Assertions.*
 import org.junit.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.BDDMockito.*
 import java.util.*
 
@@ -23,6 +22,16 @@ class SystemdOpenvpnConversionsTest {
     }
 
     @Test
+    fun extractUnitInstance_shouldReturnError_whenParsingFailed() {
+        val unitListLine = "something completly different"
+
+        val result = cut.extractUnitInstance(unitListLine)
+
+        assertThat(catchThrowable { result.block() })
+                .hasMessageContaining(unitListLine)
+    }
+
+    @Test
     fun unitInstanceToServerId_shouldWork() {
         val country = Country("NL", "Netherlands")
         given(countries.byCode("NL")).willReturn(Optional.of(country))
@@ -31,5 +40,17 @@ class SystemdOpenvpnConversionsTest {
 
         assertThat(result.block())
                 .isEqualTo(ServerId(country, 21))
+    }
+
+    @Test
+    fun unitInstanceToServerId_shouldReturnError_whenParsingFailed() {
+        val country = Country("NL", "Netherlands")
+        given(countries.byCode("NL")).willReturn(Optional.of(country))
+        val unitInstance = "siała baba mak"
+
+        val result = cut.unitInstanceToServerId(unitInstance)
+
+        assertThat(catchThrowable { result.block() })
+                .hasMessageContaining(unitInstance)
     }
 }
