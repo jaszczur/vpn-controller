@@ -40,10 +40,7 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                     .collectSortedList(compareBy { it.networkLoad })
                     .map { sortedServers ->
                         val result = sortedServers.firstOrNull()
-                        if (result == null)
-                            serverId
-                        else
-                            result.serverId
+                        result?.serverId ?: serverId
                     }
 
 }
