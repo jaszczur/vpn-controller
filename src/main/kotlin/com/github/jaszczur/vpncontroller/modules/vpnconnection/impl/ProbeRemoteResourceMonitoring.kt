@@ -10,11 +10,12 @@ import java.nio.channels.Channels
 import java.nio.channels.ReadableByteChannel
 import java.time.Duration
 
-class ProbeRemoteResourceMonitoring(@Value("#{monitoring.remoteUrl}") val probeUrl: URL) : Monitoring {
-
+class ProbeRemoteResourceMonitoring(
+        @Value("#{monitoring.remoteUrl}") val probeUrl: URL,
+        val period: Duration = Duration.ofMinutes(10)) : Monitoring {
 
     override fun monitor(): Flux<ConnectionPerformanceMetric> =
-            Flux.interval(Duration.ofSeconds(5), Duration.ofMinutes(10))
+            Flux.interval(Duration.ofSeconds(5), period)
                     .map { downloadGatheringStats() }
 
     private fun downloadGatheringStats(): ConnectionPerformanceMetric {
