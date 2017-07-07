@@ -6,7 +6,7 @@ import java.net.URL
 
 class ProbeRemoteResourceMonitoringTest {
     @Test
-    @Ignore
+//    @Ignore
     fun test_integration() {
         val cut = ProbeRemoteResourceMonitoring(URL("http://central.maven.org/maven2/io/reactivex/rxjava2/rxjava/2.1.1/rxjava-2.1.1.jar"))
 
