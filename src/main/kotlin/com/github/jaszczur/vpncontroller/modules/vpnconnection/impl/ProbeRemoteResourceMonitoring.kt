@@ -2,7 +2,9 @@ package com.github.jaszczur.vpncontroller.modules.vpnconnection.impl
 
 import com.github.jaszczur.vpncontroller.domain.ConnectionPerformanceMetric
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.Monitoring
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.net.URL
 import java.nio.ByteBuffer
@@ -10,9 +12,15 @@ import java.nio.channels.Channels
 import java.nio.channels.ReadableByteChannel
 import java.time.Duration
 
+@Service
 class ProbeRemoteResourceMonitoring(
-        @Value("#{monitoring.remoteUrl}") val probeUrl: URL,
-        val period: Duration = Duration.ofMinutes(10)) : Monitoring {
+        val probeUrl: URL,
+        val period: Duration) : Monitoring {
+
+    @Autowired
+    constructor(@Value("\${monitoring.remoteUrl}") probeUrl: URL,
+                @Value("\${monitoring.intervalMinutes}") intervalMinutes: Long):
+            this(probeUrl, Duration.ofMinutes(intervalMinutes))
 
     override fun monitor(): Flux<ConnectionPerformanceMetric> =
             Flux.interval(Duration.ofSeconds(5), period)
