@@ -1,13 +1,11 @@
 package com.github.jaszczur.vpncontroller.services
 
-import com.github.jaszczur.vpncontroller.domain.VpnServerStats
 import com.github.jaszczur.vpncontroller.usecases.VpnConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnStatisticsUseCase
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.reactive.function.server.ServerResponse
 
 @RestController
 @RequestMapping("/vpn")
