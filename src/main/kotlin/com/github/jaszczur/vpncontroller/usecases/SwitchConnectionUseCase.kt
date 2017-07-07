@@ -1,6 +1,7 @@
 package com.github.jaszczur.vpncontroller.usecases
 
 import com.github.jaszczur.vpncontroller.domain.ConnectionPerformanceMetric
+import com.github.jaszczur.vpncontroller.domain.Protocol
 import com.github.jaszczur.vpncontroller.domain.ServerId
 import com.github.jaszczur.vpncontroller.modules.stats.VpnStatsAdapter
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.Monitoring
@@ -13,18 +14,24 @@ import javax.annotation.PostConstruct
 class SwitchConnectionUseCase(private val monitoring: Monitoring,
                               private val stats: VpnStatsAdapter,
                               private val conn: VpnConnection) {
+    companion object {
+        private val WINDOW_SIZE = 5
+        private val TRESHOLD = 0.7
+        private val PROTO = Protocol.TCP
+    }
 
     @PostConstruct
     fun beginMonitoring(): Unit {
         println("Starting to monitor the connection")
-        val advisor = ConnectionAdvisor(windowSize = 5, treshold = 0.7)
+        val advisor = ConnectionAdvisor(WINDOW_SIZE, TRESHOLD)
         monitoring.monitor()
                 .map(advisor::giveAnAdvice)
                 .doOnNext { println("Got advice: $it") }
                 .filter { it == Advice.SWITCH }
                 .flatMap { conn.active() }
                 .flatMap(this::findSimilarButBetter)
-                .doOnNext { println("It is recommended to switch to $it") }
+                .flatMap { conn.enable(it, PROTO) }
+                .doOnNext { println("Switched to: $it") }
                 .subscribe()
     }
 
