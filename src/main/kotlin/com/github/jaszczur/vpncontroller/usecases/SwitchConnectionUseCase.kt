@@ -17,7 +17,7 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
     @PostConstruct
     fun beginMonitoring(): Unit {
         println("Starting to monitor the connection")
-        val advisor = ConnectionAdvisor(3, 0.7)
+        val advisor = ConnectionAdvisor(windowSize = 5, treshold = 0.7)
         monitoring.monitor()
                 .map(advisor::giveAnAdvice)
                 .doOnNext { println("Got advice: $it") }
