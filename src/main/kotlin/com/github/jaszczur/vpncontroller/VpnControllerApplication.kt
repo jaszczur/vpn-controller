@@ -22,8 +22,9 @@ class VpnControllerApplication {
     @Bean
     fun countries(countriesProvider: LocalJsonCountriesProvider) = countriesProvider.create()
 
-    @Bean
-    fun commandLineRunner(ctx: ApplicationContext) = ApplicationRunner { args ->
+    // Uncomment to inspect
+//    @Bean
+    fun inspectBeans(ctx: ApplicationContext) = ApplicationRunner { args ->
         println("Let's inspect the beans provided by Spring Boot:")
 
         val beanNames = ctx.beanDefinitionNames
