@@ -8,8 +8,17 @@ import java.util.*
 import java.util.regex.Pattern
 
 class OpenvpnServerUnitConverter(private val countries: Countries) : ServerUnitConverter {
+    companion object {
+        private val unitPattern = Pattern.compile(
+                "(\\p{Alpha}+)(\\p{Digit}+)\\.nordvpn\\.com\\.(\\p{Alpha}+)")
+
+        private val linePattern = Pattern.compile(
+                "^openvpn-client@(.+)\\.service.*")
+    }
+
+
     override fun fromUnitInstance(unitInstance: String): Optional<ConnectableServer> {
-        val matcher = Pattern.compile("nord-(\\w+)-(\\d+)-(\\w+)").matcher(unitInstance)
+        val matcher = unitPattern.matcher(unitInstance)
         if (matcher.matches()) {
             val countryOrNot = countries.byCode(matcher.group(1).toUpperCase())
             val number = Integer.parseInt(matcher.group(2))
@@ -24,7 +33,7 @@ class OpenvpnServerUnitConverter(private val countries: Countries) : ServerUnitC
     }
 
     override fun extractUnitInstance(unitListLine: String): Optional<String> {
-        val matcher = Pattern.compile("^openvpn-client@(.+)\\.service.*").matcher(unitListLine)
+        val matcher = linePattern.matcher(unitListLine)
 
         if (matcher.matches()) {
             return Optional.ofNullable(matcher.group(1))
@@ -38,7 +47,7 @@ class OpenvpnServerUnitConverter(private val countries: Countries) : ServerUnitC
         val number = connectableServer.serverId.number
         val proto = connectableServer.protocol.name.toLowerCase()
 
-        return "nord-$country-$number-$proto"
+        return "$country$number.nordvpn.com.$proto"
     }
 
     override fun toUnitName(connectableServer: ConnectableServer): String {
