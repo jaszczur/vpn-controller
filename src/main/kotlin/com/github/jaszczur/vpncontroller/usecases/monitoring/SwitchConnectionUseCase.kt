@@ -28,6 +28,12 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
     }
 
     private fun streamOfSwitchAdvices(config: MonitoringConfig, manualTrigger: Flux<Any>): Flux<Advice> {
+        val advicesFromTimer = advicesFromTimer(config)
+        val advicesFromTrigger = advicesFromTrigger(manualTrigger)
+        return Flux.merge(advicesFromTimer, advicesFromTrigger)
+    }
+
+    private fun advicesFromTimer(config: MonitoringConfig): Flux<Advice>? {
         val advisor = ConnectionAdvisor(config.windowSize, config.threshold)
 
         val advicesFromTimer = monitoring.monitor()
@@ -35,23 +41,16 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                 .map(advisor::giveAnAdvice)
                 .doOnNext { logger.debug("Advice: $it") }
                 .filter { it == Advice.SWITCH }
-
-        val advicesFromTrigger = manualTrigger.map { Advice.SWITCH }
-
-        return Flux.merge(advicesFromTimer, advicesFromTrigger)
+        return advicesFromTimer
     }
+
+    private fun advicesFromTrigger(manualTrigger: Flux<Any>) = manualTrigger.map { Advice.SWITCH }
 
     private fun findBetterServer(advices: Flux<Advice>): Publisher<ServerId> {
         return advices.flatMap { conn.active() }
                 .flatMap(this::findSimilarButBetter)
                 .doOnNext { logger.debug("Found better server: $it") }
     }
-
-    private fun switchVpnServer(protocol: Protocol): (Flux<ServerId>) -> Flux<ServerId> =
-            { serverIds: Flux<ServerId> ->
-                serverIds.flatMap { conn.enable(it, protocol) }
-                        .doOnNext { logger.info("Switched to: $it") }
-            }
 
     private fun findSimilarButBetter(serverId: ServerId) =
             stats.serverStats(serverId.country)
@@ -60,5 +59,11 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                         val result = sortedServers.firstOrNull()
                         result?.serverId ?: serverId
                     }
+
+    private fun switchVpnServer(protocol: Protocol): (Flux<ServerId>) -> Flux<ServerId> =
+            { serverIds: Flux<ServerId> ->
+                serverIds.flatMap { conn.enable(it, protocol) }
+                        .doOnNext { logger.info("Switched to: $it") }
+            }
 
 }
