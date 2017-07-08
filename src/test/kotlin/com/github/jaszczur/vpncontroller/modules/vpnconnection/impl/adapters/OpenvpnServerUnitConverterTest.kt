@@ -26,10 +26,10 @@ class OpenvpnServerUnitConverterTest {
     @Test
     fun extractUnitInstance_shouldWork() {
         val result = cut.extractUnitInstance(
-                "openvpn-client@nord-nl-21-tcp.service loaded active running OpenVPN tunnel for nord/nl/21/tcp")
+                "openvpn-client@nl21.nordvpn.com.tcp.service loaded active running OpenVPN tunnel for nord/nl/21/tcp")
 
         assertThat(result)
-                .contains("nord-nl-21-tcp")
+                .contains("nl21.nordvpn.com.tcp")
     }
 
     @Test
@@ -45,7 +45,7 @@ class OpenvpnServerUnitConverterTest {
         val country = Country("NL", "Netherlands")
         given(countries.byCode("NL")).willReturn(Optional.of(country))
 
-        val result = cut.fromUnitInstance("nord-nl-21-tcp")
+        val result = cut.fromUnitInstance("nl21.nordvpn.com.tcp")
 
         assertThat(result)
                 .contains(ConnectableServer(ServerId(country, 21), Protocol.TCP))
@@ -67,7 +67,7 @@ class OpenvpnServerUnitConverterTest {
                 ServerId(Country("PL", "Poland"), 69),
                 Protocol.UDP)
         val result = cut.toUnitName(server)
-        assertThat(result).isEqualTo("openvpn-client@nord-pl-69-udp.service")
+        assertThat(result).isEqualTo("openvpn-client@pl69.nordvpn.com.udp.service")
     }
 
     @Test
@@ -76,7 +76,7 @@ class OpenvpnServerUnitConverterTest {
                 ServerId(Country("PL", "Poland"), 69),
                 Protocol.UDP)
         val result = cut.toUnitInstance(server)
-        assertThat(result).isEqualTo("nord-pl-69-udp")
+        assertThat(result).isEqualTo("pl69.nordvpn.com.udp")
     }
 
 
