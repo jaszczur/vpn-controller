@@ -26,8 +26,8 @@ class OpenvpnServerUnitConverterTest {
     }
 
     @Test
-    fun extractUnitInstance_shouldReturnError_whenParsingFailed() {
-        val unitListLine = "something completly different"
+    fun extractUnitInstance_shouldThrowError_whenParsingFailed() {
+        val unitListLine = "something completely different"
 
         assertThat(catchThrowable { cut.extractUnitInstance(unitListLine) })
                 .hasMessageContaining(unitListLine)
@@ -45,7 +45,7 @@ class OpenvpnServerUnitConverterTest {
     }
 
     @Test
-    fun unitInstanceToServerId_shouldReturnError_whenParsingFailed() {
+    fun unitInstanceToServerId_shouldThrowError_whenParsingFailed() {
         val country = Country("NL", "Netherlands")
         given(countries.byCode("NL")).willReturn(Optional.of(country))
         val unitInstance = "siała baba mak"
