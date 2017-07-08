@@ -6,9 +6,11 @@ import com.github.jaszczur.vpncontroller.domain.Country
 import com.github.jaszczur.vpncontroller.domain.Protocol
 import com.github.jaszczur.vpncontroller.domain.ServerId
 import com.github.jaszczur.vpncontroller.modules.countries.Countries
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.Test
-import org.mockito.BDDMockito.*
+import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.mock
 import java.util.*
 
 class OpenvpnServerUnitConverterTest {
@@ -53,4 +55,24 @@ class OpenvpnServerUnitConverterTest {
         assertThat(catchThrowable { cut.fromUnitInstance(unitInstance) })
                 .hasMessageContaining(unitInstance)
     }
+
+    @Test
+    fun toUnitName_shouldConstructProperUnitName() {
+        val server = ConnectableServer(
+                ServerId(Country("PL", "Poland"), 69),
+                Protocol.UDP)
+        val result = cut.toUnitName(server)
+        assertThat(result).isEqualTo("openvpn-client@nord-pl-69-udp.service")
+    }
+
+    @Test
+    fun toUnitInstance_shouldConstructProperUnitInstance() {
+        val server = ConnectableServer(
+                ServerId(Country("PL", "Poland"), 69),
+                Protocol.UDP)
+        val result = cut.toUnitInstance(server)
+        assertThat(result).isEqualTo("nord-pl-69-udp")
+    }
+
+
 }
