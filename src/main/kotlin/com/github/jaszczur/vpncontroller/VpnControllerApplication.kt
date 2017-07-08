@@ -11,7 +11,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 import java.util.*
 import javax.annotation.PostConstruct
 
@@ -45,14 +45,16 @@ class VpnControllerApplication {
 
 }
 
-@Service
+@Component
 class MonitoringStarter(val switchConnectionUseCase: SwitchConnectionUseCase,
                         val monitoringConfig: MonitoringConfig,
                         val manualTriggers: ManualTriggers) {
 
     @PostConstruct
     fun beginMonitoring(): Unit {
-        switchConnectionUseCase.beginMonitoring(monitoringConfig, manualTriggers.findBetterServerTrigger)
+        switchConnectionUseCase.beginMonitoring(
+                monitoringConfig,
+                manualTriggers.findBetterServerTrigger)
     }
 }
 

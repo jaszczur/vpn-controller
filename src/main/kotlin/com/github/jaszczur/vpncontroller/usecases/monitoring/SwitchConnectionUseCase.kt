@@ -1,5 +1,7 @@
 package com.github.jaszczur.vpncontroller.usecases.monitoring
 
+import com.github.jaszczur.vpncontroller.domain.ConnectableServer
+import com.github.jaszczur.vpncontroller.domain.Country
 import com.github.jaszczur.vpncontroller.domain.Protocol
 import com.github.jaszczur.vpncontroller.domain.ServerId
 import com.github.jaszczur.vpncontroller.modules.stats.VpnStatsAdapter
@@ -8,6 +10,7 @@ import com.github.jaszczur.vpncontroller.modules.vpnconnection.VpnConnection
 import org.reactivestreams.Publisher
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.util.Loggers
 
 @Service
@@ -16,6 +19,7 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                               private val conn: VpnConnection) {
     companion object {
         private val logger = Loggers.getLogger(SwitchConnectionUseCase::class.java)
+        val defaultServer = ServerId(Country("NL", "Netherlands"), 21)
     }
 
     fun beginMonitoring(config: MonitoringConfig, manualTrigger: Flux<Any> = Flux.empty()): Unit {
@@ -50,7 +54,12 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                     .map { Advice.SWITCH }
 
     private fun findBetterServer(advices: Flux<Advice>): Publisher<ServerId> {
-        return advices.flatMap { conn.active() }
+        return advices
+                .flatMap {
+                    conn.active()
+                            .map { it.serverId }
+                            .defaultIfEmpty(defaultServer)
+                }
                 .flatMap(this::findSimilarButBetter)
                 .doOnNext { logger.debug("Found better server: $it") }
     }
@@ -65,8 +74,10 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
 
     private fun switchVpnServer(protocol: Protocol): (Flux<ServerId>) -> Flux<ServerId> =
             { serverIds: Flux<ServerId> ->
-                serverIds.flatMap { conn.enable(it, protocol) }
+                serverIds.flatMap { enableServer(ConnectableServer(it, protocol)) }
                         .doOnNext { logger.info("Switched to: $it") }
             }
 
+    private fun enableServer(connectableServer: ConnectableServer): Mono<ServerId> =
+            conn.enable(connectableServer).map { it.serverId }
 }

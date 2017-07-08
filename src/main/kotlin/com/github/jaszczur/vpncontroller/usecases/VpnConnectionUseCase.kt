@@ -12,7 +12,8 @@ class VpnConnectionUseCase(private val vpnConnection: VpnConnection,
 
     fun activeConnection(): Mono<VpnServerStats> =
             vpnConnection.active()
-                    .flatMap { serverId ->
+                    .flatMap { server ->
+                        val serverId = server.serverId
                         vpnStatsRest.serverStats(serverId.country)
                                 .filter{ stats -> stats.serverId == serverId }
                                 .single()

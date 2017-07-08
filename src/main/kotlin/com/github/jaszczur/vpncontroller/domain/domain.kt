@@ -6,6 +6,8 @@ data class ServerId(val country: Country, val number: Int) {
     override fun toString() = "${country.name} #$number"
 }
 
+data class ConnectableServer(val serverId: ServerId, val protocol: Protocol)
+
 data class VpnServerStats(val serverId: ServerId, val networkLoad: Int)
 
 enum class Protocol {

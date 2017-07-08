@@ -1,6 +1,7 @@
 package com.github.jaszczur.vpncontroller.modules.vpnconnection.impl
 
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.concurrent.Callable
@@ -25,7 +26,8 @@ open class Command(val command: List<String>) {
         val resourceCleanup = Consumer<BufferedReader> { it.close() }
 
         return Flux.using(resourceSupplier, sourceSupplier, resourceCleanup)
+                .subscribeOn(Schedulers.elastic())
     }
 
-    private fun createProcess() = ProcessBuilder().command(command)
+    private fun createProcess() = ProcessBuilder().command(command).redirectErrorStream(true)
 }

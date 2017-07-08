@@ -1,11 +1,10 @@
 package com.github.jaszczur.vpncontroller.modules.vpnconnection
 
-import com.github.jaszczur.vpncontroller.domain.Protocol
-import com.github.jaszczur.vpncontroller.domain.ServerId
+import com.github.jaszczur.vpncontroller.domain.ConnectableServer
 import reactor.core.publisher.Mono
 
 interface VpnConnection {
-    fun enable(id: ServerId, protocol: Protocol): Mono<ServerId>
-    fun active(): Mono<ServerId>
-    fun disable(): Mono<ServerId>
+    fun enable(server: ConnectableServer): Mono<ConnectableServer>
+    fun active(): Mono<ConnectableServer>
+    fun disable(): Mono<ConnectableServer>
 }
