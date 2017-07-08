@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
@@ -18,12 +19,13 @@ class ProbeRemoteResourceMonitoring(
         val period: Duration) : Monitoring {
 
     @Autowired
-    constructor(@Value("\${monitoring.remoteUrl}") probeUrl: URL,
-                @Value("\${monitoring.intervalMinutes}") intervalMinutes: Long):
+    constructor(@Value("\${vpncontroller.monitoring.remoteUrl}") probeUrl: URL,
+                @Value("\${vpncontroller.monitoring.intervalMinutes}") intervalMinutes: Long):
             this(probeUrl, Duration.ofMinutes(intervalMinutes))
 
     override fun monitor(): Flux<ConnectionPerformanceMetric> =
             Flux.interval(Duration.ofSeconds(5), period)
+                    .publishOn(Schedulers.elastic())
                     .map { downloadGatheringStats() }
 
     private fun downloadGatheringStats(): ConnectionPerformanceMetric {

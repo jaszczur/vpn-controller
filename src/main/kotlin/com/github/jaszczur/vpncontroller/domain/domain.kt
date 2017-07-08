@@ -2,7 +2,9 @@ package com.github.jaszczur.vpncontroller.domain
 
 data class Country(val code: String, val name: String)
 
-data class ServerId(val country: Country, val number: Int)
+data class ServerId(val country: Country, val number: Int) {
+    override fun toString() = "${country.name} #$number"
+}
 
 data class VpnServerStats(val serverId: ServerId, val networkLoad: Int)
 
