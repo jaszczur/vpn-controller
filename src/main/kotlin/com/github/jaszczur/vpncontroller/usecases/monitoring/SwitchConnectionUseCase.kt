@@ -44,7 +44,10 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
         return advicesFromTimer
     }
 
-    private fun advicesFromTrigger(manualTrigger: Flux<Any>) = manualTrigger.map { Advice.SWITCH }
+    private fun advicesFromTrigger(manualTrigger: Flux<Any>) =
+            manualTrigger
+                    .doOnNext { logger.info("Got manual switch request") }
+                    .map { Advice.SWITCH }
 
     private fun findBetterServer(advices: Flux<Advice>): Publisher<ServerId> {
         return advices.flatMap { conn.active() }

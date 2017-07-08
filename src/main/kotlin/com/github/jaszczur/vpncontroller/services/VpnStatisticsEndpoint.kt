@@ -6,11 +6,18 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.EmitterProcessor
+import reactor.core.publisher.FluxProcessor
+
+data class ManualTriggers(val findBetterServerTrigger: FluxProcessor<Any, Any> = EmitterProcessor.create())
 
 @RestController
 @RequestMapping("/vpn")
 class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
-                            private val vpnConnectionUseCase: VpnConnectionUseCase) {
+                            private val vpnConnectionUseCase: VpnConnectionUseCase,
+                            manualTriggers: ManualTriggers) {
+
+    private val findBetterServerTrigger = manualTriggers.findBetterServerTrigger.sink()
 
     @GetMapping("/country/{country}")
     fun serverStats(@PathVariable country: String) =
@@ -27,4 +34,10 @@ class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
     @GetMapping("/active")
     fun activeConnectionStats() =
             vpnConnectionUseCase.activeConnection()
+
+    // TODO: should be PUT
+    @GetMapping("/switch-to-better")
+    fun switchToBetterServer(): Unit {
+        findBetterServerTrigger.next(0)
+    }
 }
