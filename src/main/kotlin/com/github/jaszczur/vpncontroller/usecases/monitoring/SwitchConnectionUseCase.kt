@@ -17,7 +17,7 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
 
     fun beginMonitoring(config: MonitoringConfig): Unit {
         println("Starting to monitor the connection")
-        val advisor = ConnectionAdvisor(config.windowSize, config.treshold)
+        val advisor = ConnectionAdvisor(config.windowSize, config.threshold)
         monitoring.monitor()
                 .doOnNext { logger.debug("Measurement: $it") }
                 .map(advisor::giveAnAdvice)

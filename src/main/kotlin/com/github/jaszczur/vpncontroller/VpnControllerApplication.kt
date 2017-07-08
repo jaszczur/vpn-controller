@@ -35,7 +35,7 @@ class VpnControllerApplication {
     @Bean
     fun monitoringConfig(@Value("\${vpncontroller.connection.proto}") protocol: Protocol,
                          @Value("\${vpncontroller.monitoring.windowSize}") windowSize: Int,
-                         @Value("\${vpncontroller.monitoring.treshold}")treshold: Double) =
+                         @Value("\${vpncontroller.monitoring.threshold}")treshold: Double) =
             MonitoringConfig(protocol, windowSize, treshold)
 
 
