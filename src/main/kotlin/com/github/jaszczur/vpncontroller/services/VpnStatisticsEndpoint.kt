@@ -36,8 +36,14 @@ class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
             vpnConnectionUseCase.activeConnection()
 
     // TODO: should be PUT
-    @GetMapping("/switch-to-better")
+    @GetMapping("/switch-to/better")
     fun switchToBetterServer(): Unit {
         findBetterServerTrigger.next(0)
+    }
+
+    // TODO: should be PUT
+    @GetMapping("/switch-to/country/{country}")
+    fun switchToBestServerInAnotherCountry(@PathVariable country: String): Unit {
+        TODO()
     }
 }
