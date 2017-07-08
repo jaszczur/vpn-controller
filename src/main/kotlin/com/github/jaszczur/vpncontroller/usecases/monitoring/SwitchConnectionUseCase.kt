@@ -18,7 +18,7 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
         private val logger = Loggers.getLogger(SwitchConnectionUseCase::class.java)
     }
 
-    fun beginMonitoring(config: MonitoringConfig, manualTrigger: Flux<Any>): Unit {
+    fun beginMonitoring(config: MonitoringConfig, manualTrigger: Flux<Any> = Flux.empty()): Unit {
         logger.info("Starting to monitor the connection")
 
         streamOfSwitchAdvices(config, manualTrigger)
