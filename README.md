@@ -19,7 +19,6 @@ TODO list
 
 In order of importance:
 * Gather all vpn provider related facts in a single adapter
-* Implement country switching
 * Write a shell script for interacting with the controller
 * Remove hardcodes for specific vpn provider
 * Implement simple GUI
