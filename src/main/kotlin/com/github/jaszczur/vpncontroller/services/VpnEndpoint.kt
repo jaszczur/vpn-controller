@@ -4,10 +4,7 @@ import com.github.jaszczur.vpncontroller.usecases.SwitchConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnStatisticsUseCase
 import com.github.jaszczur.vpncontroller.usecases.monitoring.MonitorConnectionUseCase
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/vpn")
@@ -32,13 +29,11 @@ class VpnEndpoint(private val statisticsUseCase: VpnStatisticsUseCase,
     fun activeConnectionStats() =
             connectionUseCase.activeConnection()
 
-    // TODO: should be PUT
-    @GetMapping("/switch-to/better")
+    @PutMapping("/switch-to/better")
     fun switchToBetterServer() =
             switchConnectionUseCase.switchToBetter()
 
-    // TODO: should be PUT
-    @GetMapping("/switch-to/country/{country}")
+    @PutMapping("/switch-to/country/{country}")
     fun switchToBestServerInAnotherCountry(@PathVariable country: String) =
             switchConnectionUseCase.switchToBestIn(country)
 

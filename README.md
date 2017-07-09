@@ -11,8 +11,8 @@ Application exposes a REST API with following resources:
 * `GET /vpn/country/{code}/sorted`
 * `GET /vpn/country/{code}/best`
 * `GET /vpn/active`
-* `GET /vpn/switch-to/better` - To be changed to PUT
-* `PUT /vpn/switch-to/country/{code}` - Not implemented yet
+* `PUT /vpn/switch-to/better`
+* `PUT /vpn/switch-to/country/{code}`
 
 TODO list
 ---------
