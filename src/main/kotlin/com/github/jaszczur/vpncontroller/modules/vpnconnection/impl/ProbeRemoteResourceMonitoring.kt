@@ -18,6 +18,10 @@ class ProbeRemoteResourceMonitoring(
         val probeUrl: URL,
         val period: Duration) : Monitoring {
 
+    companion object {
+        val MAX_THROUGHPUT = (1024 * 1024 * 1024).toDouble()
+    }
+
     @Autowired
     constructor(@Value("\${vpncontroller.monitoring.remoteUrl}") probeUrl: URL,
                 @Value("\${vpncontroller.monitoring.intervalMinutes}") intervalMinutes: Long):
@@ -33,7 +37,10 @@ class ProbeRemoteResourceMonitoring(
 
         val throughputBps = Channels.newChannel(inputStream).use { channel ->
             val (timeMs, size) = measureTime { downloadSample(channel) }
-            size.toDouble() / (timeMs / 1000)
+            if (timeMs == 0L)
+                MAX_THROUGHPUT
+            else
+                size.toDouble() / (timeMs / 1000)
         }
 
         return ConnectionPerformanceMetric(throughputBps.toLong(), connTime)
