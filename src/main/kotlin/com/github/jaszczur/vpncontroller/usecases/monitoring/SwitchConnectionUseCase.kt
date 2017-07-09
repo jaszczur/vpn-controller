@@ -8,6 +8,7 @@ import com.github.jaszczur.vpncontroller.modules.stats.VpnStatsAdapter
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.Monitoring
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.VpnConnection
 import com.github.jaszczur.vpncontroller.usecases.Configuration
+import com.github.jaszczur.vpncontroller.usecases.VpnStatisticsUseCase
 import org.reactivestreams.Publisher
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -15,7 +16,8 @@ import reactor.core.publisher.Mono
 import reactor.util.Loggers
 
 @Service
-class SwitchConnectionUseCase(private val monitoring: Monitoring,
+class SwitchConnectionUseCase(private val statisticsUseCase: VpnStatisticsUseCase,
+                              private val monitoring: Monitoring,
                               private val stats: VpnStatsAdapter,
                               private val conn: VpnConnection,
                               private val configuration: Configuration) {
@@ -34,11 +36,17 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
     }
 
     fun switchToBetter(): Mono<ConnectableServer> =
-        Flux.just(Advice.SWITCH)
-                .transform(this::findBetterServer)
-                .transform(this::switchVpnServer)
-                .single()
+    conn.active().map { it.serverId.country }
+            Flux.just(Advice.SWITCH)
+                    .transform(this::findBetterServer)
+                    .transform(this::switchVpnServer)
+                    .single()
 
+
+    fun switchToBestIn(country: String): Mono<ConnectableServer> =
+            statisticsUseCase.findBest(country)
+                    .map { ConnectableServer(it.serverId, configuration.defaultProtocol) }
+                    .flatMap(conn::enable)
 
     private fun advicesFromTimer(): Flux<Advice> {
         val advisor = ConnectionAdvisor(configuration.monitoringWindowSize, configuration.monitoringThreshold)
