@@ -1,45 +1,45 @@
 package com.github.jaszczur.vpncontroller.services
 
+import com.github.jaszczur.vpncontroller.usecases.SwitchConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnStatisticsUseCase
-import com.github.jaszczur.vpncontroller.usecases.monitoring.SwitchConnectionUseCase
+import com.github.jaszczur.vpncontroller.usecases.monitoring.MonitorConnectionUseCase
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.EmitterProcessor
-import reactor.core.publisher.FluxProcessor
 
 @RestController
 @RequestMapping("/vpn")
-class VpnEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
-                  private val vpnConnectionUseCase: VpnConnectionUseCase,
-                  private val vpnSwitchConnectionUseCase: SwitchConnectionUseCase) {
+class VpnEndpoint(private val statisticsUseCase: VpnStatisticsUseCase,
+                  private val connectionUseCase: VpnConnectionUseCase,
+                  private val monitorConnectionUseCase: MonitorConnectionUseCase,
+                  private val switchConnectionUseCase: SwitchConnectionUseCase) {
 
     @GetMapping("/country/{country}")
     fun serverStats(@PathVariable country: String) =
-            vpnStatsUseCase.serverStats(country)
+            statisticsUseCase.serverStats(country)
 
     @GetMapping("/country/{country}/sorted")
     fun sortedStats(@PathVariable country: String) =
-            vpnStatsUseCase.sortedStats(country)
+            statisticsUseCase.sortedStats(country)
 
     @GetMapping("/country/{country}/best")
     fun findBest(@PathVariable country: String) =
-            vpnStatsUseCase.findBest(country)
+            statisticsUseCase.findBest(country)
 
     @GetMapping("/active")
     fun activeConnectionStats() =
-            vpnConnectionUseCase.activeConnection()
+            connectionUseCase.activeConnection()
 
     // TODO: should be PUT
     @GetMapping("/switch-to/better")
     fun switchToBetterServer() =
-            vpnSwitchConnectionUseCase.switchToBetter()
+            switchConnectionUseCase.switchToBetter()
 
     // TODO: should be PUT
     @GetMapping("/switch-to/country/{country}")
     fun switchToBestServerInAnotherCountry(@PathVariable country: String) =
-            vpnSwitchConnectionUseCase.switchToBestIn(country)
+            switchConnectionUseCase.switchToBestIn(country)
 
 }
