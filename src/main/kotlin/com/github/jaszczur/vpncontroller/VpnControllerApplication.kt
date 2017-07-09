@@ -3,7 +3,7 @@ package com.github.jaszczur.vpncontroller
 import com.github.jaszczur.vpncontroller.domain.Protocol
 import com.github.jaszczur.vpncontroller.modules.countries.impl.LocalJsonCountriesProvider
 import com.github.jaszczur.vpncontroller.services.ManualTriggers
-import com.github.jaszczur.vpncontroller.usecases.monitoring.MonitoringConfig
+import com.github.jaszczur.vpncontroller.usecases.Configuration
 import com.github.jaszczur.vpncontroller.usecases.monitoring.SwitchConnectionUseCase
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ApplicationRunner
@@ -38,7 +38,7 @@ class VpnControllerApplication {
     fun monitoringConfig(@Value("\${vpncontroller.connection.proto}") protocol: Protocol,
                          @Value("\${vpncontroller.monitoring.windowSize}") windowSize: Int,
                          @Value("\${vpncontroller.monitoring.threshold}") threshold: Double) =
-            MonitoringConfig(protocol, windowSize, threshold)
+            Configuration(protocol, windowSize, threshold)
 
     @Bean
     fun manualTriggers() = ManualTriggers()
@@ -47,13 +47,13 @@ class VpnControllerApplication {
 
 @Component
 class MonitoringStarter(val switchConnectionUseCase: SwitchConnectionUseCase,
-                        val monitoringConfig: MonitoringConfig,
+                        val configuration: Configuration,
                         val manualTriggers: ManualTriggers) {
 
     @PostConstruct
     fun beginMonitoring(): Unit {
         switchConnectionUseCase.beginMonitoring(
-                monitoringConfig,
+                configuration,
                 manualTriggers.findBetterServerTrigger)
     }
 }

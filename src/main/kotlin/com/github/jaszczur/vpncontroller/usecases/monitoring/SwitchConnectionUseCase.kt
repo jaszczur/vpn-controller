@@ -7,6 +7,7 @@ import com.github.jaszczur.vpncontroller.domain.ServerId
 import com.github.jaszczur.vpncontroller.modules.stats.VpnStatsAdapter
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.Monitoring
 import com.github.jaszczur.vpncontroller.modules.vpnconnection.VpnConnection
+import com.github.jaszczur.vpncontroller.usecases.Configuration
 import org.reactivestreams.Publisher
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -22,23 +23,23 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
         val defaultServer = ServerId(Country("NL", "Netherlands"), 21)
     }
 
-    fun beginMonitoring(config: MonitoringConfig, manualTrigger: Flux<Any> = Flux.empty()): Unit {
+    fun beginMonitoring(config: Configuration, manualTrigger: Flux<Any> = Flux.empty()): Unit {
         logger.info("Starting to monitor the connection")
 
         streamOfSwitchAdvices(config, manualTrigger)
                 .transform(this::findBetterServer)
-                .transform(this.switchVpnServer(config.protocol))
+                .transform(this.switchVpnServer(config.defaultProtocol))
                 .subscribe()
     }
 
-    private fun streamOfSwitchAdvices(config: MonitoringConfig, manualTrigger: Flux<Any>): Flux<Advice> {
+    private fun streamOfSwitchAdvices(config: Configuration, manualTrigger: Flux<Any>): Flux<Advice> {
         val advicesFromTimer = advicesFromTimer(config)
         val advicesFromTrigger = advicesFromTrigger(manualTrigger)
         return Flux.merge(advicesFromTimer, advicesFromTrigger)
     }
 
-    private fun advicesFromTimer(config: MonitoringConfig): Flux<Advice>? {
-        val advisor = ConnectionAdvisor(config.windowSize, config.threshold)
+    private fun advicesFromTimer(config: Configuration): Flux<Advice>? {
+        val advisor = ConnectionAdvisor(config.monitoringWindowSize, config.monitoringThreshold)
 
         val advicesFromTimer = monitoring.monitor()
                 .doOnNext { logger.debug("Measurement: $it") }

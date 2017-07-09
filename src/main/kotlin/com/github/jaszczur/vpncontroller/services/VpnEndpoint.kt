@@ -13,9 +13,9 @@ data class ManualTriggers(val findBetterServerTrigger: FluxProcessor<Any, Any> =
 
 @RestController
 @RequestMapping("/vpn")
-class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
-                            private val vpnConnectionUseCase: VpnConnectionUseCase,
-                            manualTriggers: ManualTriggers) {
+class VpnEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
+                  private val vpnConnectionUseCase: VpnConnectionUseCase,
+                  manualTriggers: ManualTriggers) {
 
     private val findBetterServerTrigger = manualTriggers.findBetterServerTrigger.sink()
 
@@ -44,6 +44,6 @@ class VpnStatisticsEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
     // TODO: should be PUT
     @GetMapping("/switch-to/country/{country}")
     fun switchToBestServerInAnotherCountry(@PathVariable country: String): Unit {
-        TODO()
+        vpnConnectionUseCase.switchToBestIn(country)
     }
 }
