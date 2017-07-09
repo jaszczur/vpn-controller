@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
+import reactor.util.Loggers
 import java.net.URL
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
@@ -19,6 +20,7 @@ class ProbeRemoteResourceMonitoring(
         val period: Duration) : Monitoring {
 
     companion object {
+        val logger = Loggers.getLogger(ProbeRemoteResourceMonitoring::class.java)
         val MAX_THROUGHPUT = (1024 * 1024 * 1024).toDouble()
     }
 
@@ -37,10 +39,11 @@ class ProbeRemoteResourceMonitoring(
 
         val throughputBps = Channels.newChannel(inputStream).use { channel ->
             val (timeMs, size) = measureTime { downloadSample(channel) }
+            logger.debug("Got $size bytes of response in $timeMs ms")
             if (timeMs == 0L)
                 MAX_THROUGHPUT
             else
-                size.toDouble() / (timeMs / 1000)
+                size / (timeMs / 1000.0)
         }
 
         return ConnectionPerformanceMetric(throughputBps.toLong(), connTime)

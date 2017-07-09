@@ -14,26 +14,25 @@ open class Command(val command: List<String>) {
     constructor(command: String, vararg params: String)
             : this(listOf(command) + params.toList())
 
-    fun executeGettingOutput(): Flux<String> {
-        val resourceSupplier = Callable {
-            val proc = createProcess().start()
-            Pair(proc, BufferedReader(InputStreamReader(proc.inputStream)))
-        }
+    fun executeGettingOutput(): Flux<String> =
+            Flux.using(resourceSupplier, sourceSupplier, resourceCleanup)
+                    .subscribeOn(Schedulers.elastic())
 
-        val sourceSupplier = Function<Pair<Process, BufferedReader>, Flux<String>> { (_, reader)  ->
-            Flux.fromStream(reader.lines())
-        }
+    private val resourceSupplier = Callable {
+        val proc = createProcess().start()
+        Pair(proc, BufferedReader(InputStreamReader(proc.inputStream)))
+    }
 
-        val resourceCleanup = Consumer<Pair<Process, BufferedReader>> { (proc, reader) ->
-            reader.close()
-            proc.waitFor(1, TimeUnit.SECONDS)
-            val exitCode = proc.exitValue()
-            if (exitCode != 0)
-                throw IllegalStateException("Process failed. Exit code = $exitCode")
-        }
+    private val sourceSupplier = Function<Pair<Process, BufferedReader>, Flux<String>> { (_, reader) ->
+        Flux.fromStream(reader.lines())
+    }
 
-        return Flux.using(resourceSupplier, sourceSupplier, resourceCleanup)
-                .subscribeOn(Schedulers.elastic())
+    private val resourceCleanup = Consumer<Pair<Process, BufferedReader>> { (proc, reader) ->
+        reader.close()
+        proc.waitFor(1, TimeUnit.SECONDS)
+        val exitCode = proc.exitValue()
+        if (exitCode != 0)
+            throw IllegalStateException("Process failed. Exit code = $exitCode")
     }
 
     private fun createProcess() = ProcessBuilder().command(command).redirectErrorStream(true)
