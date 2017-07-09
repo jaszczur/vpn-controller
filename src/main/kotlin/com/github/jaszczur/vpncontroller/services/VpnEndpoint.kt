@@ -2,6 +2,7 @@ package com.github.jaszczur.vpncontroller.services
 
 import com.github.jaszczur.vpncontroller.usecases.VpnConnectionUseCase
 import com.github.jaszczur.vpncontroller.usecases.VpnStatisticsUseCase
+import com.github.jaszczur.vpncontroller.usecases.monitoring.SwitchConnectionUseCase
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -9,15 +10,11 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.EmitterProcessor
 import reactor.core.publisher.FluxProcessor
 
-data class ManualTriggers(val findBetterServerTrigger: FluxProcessor<Any, Any> = EmitterProcessor.create())
-
 @RestController
 @RequestMapping("/vpn")
 class VpnEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
                   private val vpnConnectionUseCase: VpnConnectionUseCase,
-                  manualTriggers: ManualTriggers) {
-
-    private val findBetterServerTrigger = manualTriggers.findBetterServerTrigger.sink()
+                  private val vpnSwitchConnectionUseCase: SwitchConnectionUseCase) {
 
     @GetMapping("/country/{country}")
     fun serverStats(@PathVariable country: String) =
@@ -37,9 +34,9 @@ class VpnEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
 
     // TODO: should be PUT
     @GetMapping("/switch-to/better")
-    fun switchToBetterServer(): Unit {
-        findBetterServerTrigger.next(0)
-    }
+    fun switchToBetterServer() =
+            vpnSwitchConnectionUseCase.switchToBetter()
+
 
     // TODO: should be PUT
     @GetMapping("/switch-to/country/{country}")

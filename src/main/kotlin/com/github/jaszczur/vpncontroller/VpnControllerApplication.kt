@@ -46,14 +46,11 @@ class VpnControllerApplication {
 }
 
 @Component
-class MonitoringStarter(val switchConnectionUseCase: SwitchConnectionUseCase,
-                        val configuration: Configuration,
-                        val manualTriggers: ManualTriggers) {
+class MonitoringStarter(val switchConnectionUseCase: SwitchConnectionUseCase) {
 
     @PostConstruct
     fun beginMonitoring(): Unit {
-        switchConnectionUseCase.beginMonitoring(
-                manualTriggers.findBetterServerTrigger)
+        switchConnectionUseCase.beginMonitoring()
     }
 }
 

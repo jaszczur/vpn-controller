@@ -24,22 +24,23 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
         val defaultServer = ServerId(Country("NL", "Netherlands"), 21)
     }
 
-    fun beginMonitoring(manualTrigger: Flux<Any> = Flux.empty()): Unit {
+    fun beginMonitoring(): Unit {
         logger.info("Starting to monitor the connection")
 
-        streamOfSwitchAdvices(manualTrigger)
+        advicesFromTimer()
                 .transform(this::findBetterServer)
                 .transform(this::switchVpnServer)
                 .subscribe()
     }
 
-    private fun streamOfSwitchAdvices(manualTrigger: Flux<Any>): Flux<Advice> {
-        val advicesFromTimer = advicesFromTimer()
-        val advicesFromTrigger = advicesFromTrigger(manualTrigger)
-        return Flux.merge(advicesFromTimer, advicesFromTrigger)
-    }
+    fun switchToBetter(): Mono<ConnectableServer> =
+        Flux.just(Advice.SWITCH)
+                .transform(this::findBetterServer)
+                .transform(this::switchVpnServer)
+                .single()
 
-    private fun advicesFromTimer(): Flux<Advice>? {
+
+    private fun advicesFromTimer(): Flux<Advice> {
         val advisor = ConnectionAdvisor(configuration.monitoringWindowSize, configuration.monitoringThreshold)
 
         val advicesFromTimer = monitoring.monitor()
@@ -49,11 +50,6 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                 .filter { it == Advice.SWITCH }
         return advicesFromTimer
     }
-
-    private fun advicesFromTrigger(manualTrigger: Flux<Any>) =
-            manualTrigger
-                    .doOnNext { logger.info("Got manual switch request") }
-                    .map { Advice.SWITCH }
 
     private fun findBetterServer(advices: Flux<Advice>): Publisher<ServerId> {
         return advices
@@ -75,10 +71,8 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                     }
 
     private fun switchVpnServer(serverIds: Flux<ServerId>) =
-            serverIds.flatMap { enableServer(ConnectableServer(it, configuration.defaultProtocol)) }
+            serverIds.flatMap { conn.enable(ConnectableServer(it, configuration.defaultProtocol)) }
                     .doOnNext { logger.info("Switched to: $it") }
 
 
-    private fun enableServer(connectableServer: ConnectableServer): Mono<ServerId> =
-            conn.enable(connectableServer).map { it.serverId }
 }
