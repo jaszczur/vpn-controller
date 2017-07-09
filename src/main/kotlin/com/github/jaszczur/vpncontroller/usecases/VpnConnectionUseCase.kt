@@ -12,7 +12,8 @@ import reactor.core.publisher.Mono
 @Service
 class VpnConnectionUseCase(private val vpnConnection: VpnConnection,
                            private val vpnStatsRest: VpnStatsAdapter,
-                           private val statisticsUseCase: VpnStatisticsUseCase) {
+                           private val statisticsUseCase: VpnStatisticsUseCase,
+                           private val configuration: Configuration) {
 
     fun activeConnection(): Mono<VpnServerStats> =
             vpnConnection.active()
@@ -25,7 +26,7 @@ class VpnConnectionUseCase(private val vpnConnection: VpnConnection,
 
     fun switchToBestIn(country: String): Mono<ConnectableServer> =
             statisticsUseCase.findBest(country)
-                    .map { ConnectableServer(it.serverId, Protocol.UDP) }
+                    .map { ConnectableServer(it.serverId, configuration.defaultProtocol) }
                     .flatMap(vpnConnection::enable)
 
 }

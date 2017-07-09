@@ -17,29 +17,30 @@ import reactor.util.Loggers
 @Service
 class SwitchConnectionUseCase(private val monitoring: Monitoring,
                               private val stats: VpnStatsAdapter,
-                              private val conn: VpnConnection) {
+                              private val conn: VpnConnection,
+                              private val configuration: Configuration) {
     companion object {
         private val logger = Loggers.getLogger(SwitchConnectionUseCase::class.java)
         val defaultServer = ServerId(Country("NL", "Netherlands"), 21)
     }
 
-    fun beginMonitoring(config: Configuration, manualTrigger: Flux<Any> = Flux.empty()): Unit {
+    fun beginMonitoring(manualTrigger: Flux<Any> = Flux.empty()): Unit {
         logger.info("Starting to monitor the connection")
 
-        streamOfSwitchAdvices(config, manualTrigger)
+        streamOfSwitchAdvices(manualTrigger)
                 .transform(this::findBetterServer)
-                .transform(this.switchVpnServer(config.defaultProtocol))
+                .transform(this::switchVpnServer)
                 .subscribe()
     }
 
-    private fun streamOfSwitchAdvices(config: Configuration, manualTrigger: Flux<Any>): Flux<Advice> {
-        val advicesFromTimer = advicesFromTimer(config)
+    private fun streamOfSwitchAdvices(manualTrigger: Flux<Any>): Flux<Advice> {
+        val advicesFromTimer = advicesFromTimer()
         val advicesFromTrigger = advicesFromTrigger(manualTrigger)
         return Flux.merge(advicesFromTimer, advicesFromTrigger)
     }
 
-    private fun advicesFromTimer(config: Configuration): Flux<Advice>? {
-        val advisor = ConnectionAdvisor(config.monitoringWindowSize, config.monitoringThreshold)
+    private fun advicesFromTimer(): Flux<Advice>? {
+        val advisor = ConnectionAdvisor(configuration.monitoringWindowSize, configuration.monitoringThreshold)
 
         val advicesFromTimer = monitoring.monitor()
                 .doOnNext { logger.debug("Measurement: $it") }
@@ -73,11 +74,10 @@ class SwitchConnectionUseCase(private val monitoring: Monitoring,
                         result?.serverId ?: serverId
                     }
 
-    private fun switchVpnServer(protocol: Protocol): (Flux<ServerId>) -> Flux<ServerId> =
-            { serverIds: Flux<ServerId> ->
-                serverIds.flatMap { enableServer(ConnectableServer(it, protocol)) }
-                        .doOnNext { logger.info("Switched to: $it") }
-            }
+    private fun switchVpnServer(serverIds: Flux<ServerId>) =
+            serverIds.flatMap { enableServer(ConnectableServer(it, configuration.defaultProtocol)) }
+                    .doOnNext { logger.info("Switched to: $it") }
+
 
     private fun enableServer(connectableServer: ConnectableServer): Mono<ServerId> =
             conn.enable(connectableServer).map { it.serverId }

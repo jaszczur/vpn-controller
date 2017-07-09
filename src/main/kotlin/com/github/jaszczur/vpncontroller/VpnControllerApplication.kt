@@ -53,7 +53,6 @@ class MonitoringStarter(val switchConnectionUseCase: SwitchConnectionUseCase,
     @PostConstruct
     fun beginMonitoring(): Unit {
         switchConnectionUseCase.beginMonitoring(
-                configuration,
                 manualTriggers.findBetterServerTrigger)
     }
 }
