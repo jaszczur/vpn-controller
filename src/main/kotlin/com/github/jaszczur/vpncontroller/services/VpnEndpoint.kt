@@ -40,7 +40,7 @@ class VpnEndpoint(private val vpnStatsUseCase: VpnStatisticsUseCase,
 
     // TODO: should be PUT
     @GetMapping("/switch-to/country/{country}")
-    fun switchToBestServerInAnotherCountry(@PathVariable country: String): Unit {
-        vpnConnectionUseCase.switchToBestIn(country)
-    }
+    fun switchToBestServerInAnotherCountry(@PathVariable country: String) =
+            vpnConnectionUseCase.switchToBestIn(country)
+
 }
