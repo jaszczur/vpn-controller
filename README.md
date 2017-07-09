@@ -19,6 +19,5 @@ TODO list
 
 In order of importance:
 * Gather all vpn provider related facts in a single adapter
-* Write a shell script for interacting with the controller
 * Remove hardcodes for specific vpn provider
 * Implement simple GUI
