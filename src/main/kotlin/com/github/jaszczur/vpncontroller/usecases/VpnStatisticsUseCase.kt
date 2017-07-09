@@ -13,20 +13,17 @@ class VpnStatisticsUseCase(vpnStatsRest: VpnStatsAdapter,
     private val vpnStatistics = VpnStatistics(vpnStatsRest)
 
     fun serverStats(countryCode: String): Flux<VpnServerStats> =
-            findCountry(countryCode)
+            countries.fuzzyByCode(countryCode)
                     .flatMapMany(vpnStatistics::serverStats)
 
     fun sortedStats(countryCode: String): Flux<VpnServerStats> =
-            findCountry(countryCode)
+            countries.fuzzyByCode(countryCode)
                     .flatMapMany(vpnStatistics::sortedStats)
 
     fun findBest(countryCode: String): Mono<VpnServerStats> =
-            findCountry(countryCode)
+            countries.fuzzyByCode(countryCode)
                     .flatMap(vpnStatistics::findBest)
 
-    private fun findCountry(code: String) =
-            Mono.justOrEmpty(countries.byCode(code.toUpperCase()))
-                    .switchIfEmpty(Mono.error(CountryNotFoundException(code)))
 
 }
 
