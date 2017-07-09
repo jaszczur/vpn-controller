@@ -36,9 +36,9 @@ class SystemdOpenvpnConnection(countries: Countries) : VpnConnection {
                     .map { serverToBeDisabled }
 }
 
-open class SystemdCommand(vararg params: String) : Command(systemctlCmd, *params) {
+open class SystemdCommand(vararg params: String) : Command(systemctlCmd + params) {
     companion object {
-        val systemctlCmd = "systemctl"
+        val systemctlCmd = listOf("systemctl")
     }
 
     fun executeCheckingForFailures(): Mono<List<String>> =
